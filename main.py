@@ -24,13 +24,6 @@ import random
 
 # Constant declaration
 VERSION = 'v.0.1.0'
-NUMBER_OF_GUESSES = 6
-NUMBER_OF_LETTERS = 5
-TARGET_WORD_FILE = 'target_words.txt'
-ALL_WORD_FILE = 'all_words.txt'
-X_MARK = u'\u274C'
-CIRCLE = u'\U0001F535'
-CHECK_MARK = u'\u2705'
 
 
 def white_box():
@@ -57,8 +50,42 @@ def welcome_msg():
     return
 
 
-def mark_guess(secret_word, guess):
+def score_guess(secret_word, guess):
+    """
+    Mark each letters in the secret word using symbols to represent the score
 
+    Args:
+        secret_word: The secret word to check
+        guess: The player's guess
+    Params:
+        0 : Letter not found in the secret word.
+        1 : Letter found but not in the correct position.
+        2 : Letter is in the correct position
+    :return:
+        marking : a list that contains symbols that is populated based on the marked letters
+        return  scores in numerical format. (e.g. 0, 1, 2 )
+    """
+    scores = ()
+    # @TODO: Update scoring so when there are multiple letters, only mark found as many times as the
+    # @number of the letters
+    x_mark = u'\u274C'
+    circle = u'\U0001F535'
+    check_mark = u'\u2705'
+
+    for letter in range(len(secret_word)):
+        # If same letter at the same position
+        if secret_word[letter] == guess[letter]:
+            scores += tuple(str("2"))
+        elif guess[letter] in secret_word:
+            # If letter not at the same position but exist in the secret word
+            scores += tuple(str("1"))
+        else:
+            # If letter is not found in the secret word
+            scores += tuple(str("0"))
+    return scores
+
+
+def mark_guess(secret_word, guess):
     """
     Mark each letters in the secret word using symbols to represent the score
 
@@ -73,57 +100,68 @@ def mark_guess(secret_word, guess):
     marking = []
     # @TODO: Update scoring so when there are multiple letters, only mark found as many times as the
     # @number of the letters
+    x_mark = u'\u274C'
+    circle = u'\U0001F535'
+    check_mark = u'\u2705'
 
     for letter in range(len(secret_word)):
         # If same letter at the same position
         if secret_word[letter] == guess[letter]:
-            marking.append(CHECK_MARK)
+            marking.append(check_mark)
         elif guess[letter] in secret_word:
             # If letter not at the same position but exist in the secret word
-            marking.append(CIRCLE)
+            marking.append(circle)
         else:
             # If letter is not found in the secret word
-            marking.append(X_MARK)
+            marking.append(x_mark)
     return marking
 
 
 def show_lists(list_of_guess, secret_word, counter_guesses):
     # Show all the entries in the guess list
-    for i in range(len(list_of_guess)):
-        if i < counter_guesses:
+    for index in range(len(list_of_guess)):
+        if index < counter_guesses:
             # Only show marking on attempted guess
-            marking = mark_guess(secret_word, list_of_guess[i])
-            row_temp = str(i + 1) + " | "
-            for letter in range(len(list_of_guess[i])):
-                row_temp += marking[letter] + list_of_guess[i][letter].upper() + " "
+            marking = mark_guess(secret_word, list_of_guess[index])
+            scores = score_guess(secret_word, list_of_guess[index])
+            row_temp = str(index + 1) + " | "
+            for letter in range(len(list_of_guess[index])):
+                row_temp += marking[letter] + list_of_guess[index][letter].upper() + " "
+            print(row_temp)
+            row_temp = ""
+            for letter in list(scores):
+                row_temp += letter + " "
             print(row_temp)
         else:
-            print(str(i + 1) + " | " + str(list_of_guess[i]))
+            print(str(index + 1) + " | " + str(list_of_guess[index]))
     print("")
 
 
-def initialize_guesses():
+def initialize_guesses(number_of_guesses, number_of_letters):
     # Initialize empty guesses
     guess_list = []
     guess_content = []
 
     # Add white boxes to the list as much as the number of letters in a guess
-    for x in range(NUMBER_OF_LETTERS):
+    for x in range(number_of_letters):
         guess_content.append(white_box())
 
     # Paste the created white boxes above as many times as the number of guesses
-    for i in range(NUMBER_OF_GUESSES):
+    for i in range(number_of_guesses):
         guess_list.append(guess_content)
 
     return guess_list
 
 
-def prompt_guess(word_dictionary):
+def prompt_guess(word_dictionary, number_of_letters):
     # Display prompt
+    x_mark = u'\u274C'
+    circle = u'\U0001F535'
+    check_mark = u'\u2705'
     guess = input("-----------------------\n"
-                  + X_MARK + ": letter is not in the secret word.\n"
-                  + CIRCLE + ": letter is in the secret word but not at the correct position.\n"
-                  + CHECK_MARK + ": letter is in the secret word and at the correct position.\n"
+                  + x_mark + ": letter is not in the secret word.\n"
+                  + circle + ": letter is in the secret word but not at the correct position.\n"
+                  + check_mark + ": letter is in the secret word and at the correct position.\n"
                   + "Enter your guess: \n").lower()
 
     # Process guess and return the input validity
@@ -131,9 +169,9 @@ def prompt_guess(word_dictionary):
         print('Guess a 5 letters word and press "enter" to see \n'
               + 'if any of the letter is in the secret word.\n')
         return 'invalid'
-    elif guess in word_dictionary and len(guess) == NUMBER_OF_LETTERS:
+    elif guess in word_dictionary and len(guess) == number_of_letters:
         return guess
-    elif len(guess) != NUMBER_OF_LETTERS:
+    elif len(guess) != number_of_letters:
         print('Please enter a 5 letter word.\n')
         return 'invalid'
     else:
@@ -141,41 +179,30 @@ def prompt_guess(word_dictionary):
         return 'invalid'
 
 
-def grab_secret_word():
-    # Pick a random word from a text file
+def grab_words_from_file(filepath):
+    # Read words from file and store them into a list
+    words = []
 
-    target_words = []
-
-    file_handle = open(TARGET_WORD_FILE, 'r')
+    file_handle = open(filepath, 'r')
     for word in file_handle:
-        target_words.append(word.strip())
+        words.append(word.strip())
 
     file_handle.close()
 
-    return random.choice(target_words)
+    return words
 
 
-def grab_all_words():
-    # Read all words file and populate the content to a list
-    # used to check if a guess is valid
-    all_words = []
-
-    file_handle = open(ALL_WORD_FILE, 'r')
-    for word in file_handle:
-        all_words.append(word.strip())
-
-    file_handle.close()
-
-    return all_words
-
-
-def round_over(secret_word, is_winning):
+def round_over(secret_word, is_winning, filepath, tries, player_name):
 
     if is_winning:
         print("Congratulations! \n"
               + "You have guessed the secret word : " + format_space(secret_word))
     else:
-        print("You have reached the number of allowed guesses.")
+        print("Sorry, you have reached the number of allowed guesses.\n"
+              + "The secret word is : " + format_space(secret_word))
+
+    # Write statistics
+    write_statistics(filepath, player_name, secret_word, tries, is_winning)
 
     prompt_restart = input("\nWould you like to play again? (y/n) : ")
     print()
@@ -188,16 +215,140 @@ def round_over(secret_word, is_winning):
         return False
 
 
+def enter_player_name():
+    player_name = input("Please enter your name without whitespace \n"
+                        + "or leave blank if you wish to remain anonymous.\n"
+                        + "Name : ")
+    if player_name == "":
+        return "anonymous"
+    if ' ' in player_name:
+        return "invalid"
+    else:
+        return player_name
+
+
+def get_statistics(filepath, player_name):
+    """
+        Read statistics file
+            Format :
+            Name, Word, Tries, Successful?, Word, Tries, Successful?
+    """
+    file_handle = open(filepath, "r+")
+    statistics = []
+
+    for line in file_handle:
+        line = line.strip()
+        statistics = line.split(",")
+        if '' in statistics:
+            statistics.remove('')
+        if len(statistics) >= 1:
+            if statistics[0] == player_name:
+                if len(statistics) >= 2:
+                    # Return statistic if there is any stats recorded for the associated player.
+                    statistics = line.split(",")
+                file_handle.readline()
+                file_handle.close()
+                return statistics
+
+    # Player not found, add to statistics
+    file_handle.readline()
+    file_handle.write("\n" + player_name)
+    file_handle.close()
+    return []
+
+
+def write_statistics(filepath, player_name, secret_word, tries, is_successful):
+    """
+        Write statistics to a file
+            Format :
+            Name, Word, Tries, Successful?, Word, Tries, Successful?
+    """
+    file_handle = open(filepath, "r+")
+    content = file_handle.readlines()
+    success = "Successful" if is_successful else "Unsuccessful"
+    found_in_index = 0
+    old_content = ""
+    for line in range(len(content)):
+        statistics = content[line].split(",")
+        if '' in statistics:
+            statistics.remove('')
+        if len(statistics) >= 1:
+            if statistics[0].strip() == player_name:
+                # Found the player, save the index of the line
+                found_in_index = line
+                old_content += content[line]
+                break
+
+    file_handle.close()
+    content[found_in_index] = old_content.strip() + "," + secret_word + "," + str(tries) + "," + success + "\n"
+    file_handle = open(filepath, "w")
+    file_handle.writelines(content)
+    file_handle.close()
+
+def display_statistics(statistics):
+    print("Name : " + statistics[0])
+    counter = 0
+    stat = ""
+    for index in range(1, len(statistics)):
+        if counter == 0:
+            stat += "Word : " + statistics[index] + " "
+        elif counter == 1:
+            stat += "Tries : " + statistics[index] + " "
+        else:
+            stat += ", " + statistics[index]
+        counter += 1
+        if counter >= 3:
+            counter = 0
+            print(stat)
+            stat = ""
+
+
 def play_game():
 
     playing_game = True
+    number_of_guesses = 6
+    number_of_letters = 5
+    target_word_file = 'target_words.txt'
+    all_words_file = 'all_words.txt'
+    statistic_file = 'statistics.txt'
+    default_player_name = "anonymous"
+
+    input_player_name = True
+    player_name = "anonymous"
+
+    # Statistics
+    while input_player_name:
+        player_name = enter_player_name()
+        if player_name == "invalid":
+            print("No white space allowed!")
+            continue
+        else:
+            input_player_name = False
+
+    statistics = []
+    try:
+        statistics = get_statistics(statistic_file, player_name)
+    except FileNotFoundError:
+        # If file not found, create one
+        file_handle = open(statistic_file, "w")
+        file_handle.close()
+        statistics = get_statistics(statistic_file, player_name)
+
+    if len(statistics) >= 2:
+        # If statistics exist for the player, display it
+        print("Welcome back " + player_name + ". Your statistics are:")
+        display_statistics(statistics)
+    else:
+        # Otherwise just welcome the player to the game
+        print("Welcome to the game " + player_name + "\n")
 
     while playing_game:
-        list_of_guess = initialize_guesses()
+        list_of_guess = initialize_guesses(number_of_guesses, number_of_letters)
         playing_round = True
         counter_guesses = 0
-        secret_word = grab_secret_word()
-        word_dictionary = grab_all_words()
+        secret_word = random.choice(grab_words_from_file(target_word_file))
+        word_dictionary = grab_words_from_file(all_words_file)
+
 
         while playing_round:
 
@@ -205,15 +356,14 @@ def play_game():
             show_lists(list_of_guess, secret_word, counter_guesses)
 
             # Check if player reached guess limit
-            if counter_guesses >= NUMBER_OF_GUESSES:
-                if round_over(secret_word, False):
+            if counter_guesses >= number_of_guesses:
+                if round_over(secret_word, False, statistic_file, counter_guesses, player_name):
                     playing_game = True
-                    break
                 else:
                     playing_game = False
-                    break
+                break
 
-            guess = prompt_guess(word_dictionary)
+            guess = prompt_guess(word_dictionary, number_of_letters)
             if guess == 'invalid':
                 continue
             else:
@@ -222,7 +372,7 @@ def play_game():
                 counter_guesses += 1
                 if guess == secret_word:
                     show_lists(list_of_guess, secret_word, counter_guesses)
-                    if round_over(secret_word, True):
+                    if round_over(secret_word, True, statistic_file, counter_guesses, player_name):
                         playing_round = False
                     else:
                         playing_round = False
