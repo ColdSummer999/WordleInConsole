@@ -72,16 +72,33 @@ def score_guess(secret_word, guess):
     circle = u'\U0001F535'
     check_mark = u'\u2705'
 
+    letter_count = {}
+    for letter in range(len(secret_word)):
+        letter_count[secret_word[letter]] = secret_word.count(secret_word[letter])
+
+    letter_found = {}
+    for letter in range(len(secret_word)):
+        letter_found[secret_word[letter]] = 1
+
     for letter in range(len(secret_word)):
         # If same letter at the same position
         if secret_word[letter] == guess[letter]:
+            letter_found[secret_word[letter]] = letter_found[secret_word[letter]] + 1
             scores += tuple(str("2"))
         elif guess[letter] in secret_word:
-            # If letter not at the same position but exist in the secret word
-            scores += tuple(str("1"))
+            # If letter not at the same position but exist in the secret word and not more than count
+            if letter_found[secret_word[letter]] > letter_count[secret_word[letter]]:
+                scores += tuple(str("0"))
+            else:
+                letter_found[secret_word[letter]] = letter_found[secret_word[letter]] + 1
+                if letter_found[secret_word[letter]] > letter_count[secret_word[letter]]:
+                    scores += tuple(str("1"))
+                else:
+                    scores += tuple(str("0"))
         else:
             # If letter is not found in the secret word
             scores += tuple(str("0"))
+
     return scores
 
 
@@ -103,14 +120,30 @@ def mark_guess(secret_word, guess):
     x_mark = u'\u274C'
     circle = u'\U0001F535'
     check_mark = u'\u2705'
+    # Add letter to dictionary as key and the value as the number of times the letter appear in the string
+    letter_count = {}
+    for letter in range(len(secret_word)):
+        letter_count[secret_word[letter]] = secret_word.count(secret_word[letter])
+
+    letter_found = {}
+    for letter in range(len(secret_word)):
+        letter_found[secret_word[letter]] = 1
 
     for letter in range(len(secret_word)):
         # If same letter at the same position
         if secret_word[letter] == guess[letter]:
+            letter_found[secret_word[letter]] = letter_found[secret_word[letter]] + 1
             marking.append(check_mark)
         elif guess[letter] in secret_word:
-            # If letter not at the same position but exist in the secret word
-            marking.append(circle)
+            # If letter not at the same position but exist in the secret word and not more than count
+            if letter_found[secret_word[letter]] > letter_count[secret_word[letter]]:
+                marking.append(x_mark)
+            else:
+                letter_found[secret_word[letter]] = letter_found[secret_word[letter]] + 1
+                if letter_found[secret_word[letter]] > letter_count[secret_word[letter]]:
+                    marking.append(circle)
+                else:
+                    marking.append(x_mark)
         else:
             # If letter is not found in the secret word
             marking.append(x_mark)
@@ -143,11 +176,11 @@ def initialize_guesses(number_of_guesses, number_of_letters):
     guess_content = []
 
     # Add white boxes to the list as much as the number of letters in a guess
-    for x in range(number_of_letters):
+    for letter_index in range(number_of_letters):
         guess_content.append(white_box())
 
     # Paste the created white boxes above as many times as the number of guesses
-    for i in range(number_of_guesses):
+    for guess_index in range(number_of_guesses):
         guess_list.append(guess_content)
 
     return guess_list
@@ -305,6 +338,8 @@ def display_statistics(statistics):
 
 def play_game():
 
+    debug_cheat = False
+
     playing_game = True
     number_of_guesses = 6
     number_of_letters = 5
@@ -347,11 +382,10 @@ def play_game():
         playing_round = True
         counter_guesses = 0
         secret_word = random.choice(grab_words_from_file(target_word_file))
+
         word_dictionary = grab_words_from_file(all_words_file)
 
-
         while playing_round:
-
             # Show guess chart
             show_lists(list_of_guess, secret_word, counter_guesses)
 

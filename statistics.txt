@@ -1,0 +1,10 @@
+
+matias,unmet,1,Successful,amiss,2,Successful,slash,2,Successful,rival,1,Successful,detox,1,Successful,timer,1,Successful,vivid,1,Successful,scent,1,Successful,slept,1,Successful,verso,1,Successful,train,1,Successful,husky,1,Successful,chaff,2,Successful,comfy,1,Successful,prime,1,Successful,golly,6,Unsuccessful,kebab,6,Unsuccessful,kebab,1,Successful,kebab,3,Successful,kebab,2,Successful,kebab,3,Successful,kebab,1,Successful,kebab,1,Successful,kebab,1,Successful,kebab,2,Successful,kebab,2,Successful,forge,6,Unsuccessful,snort,6,Unsuccessful,feast,2,Successful,feast,1,Successful,feast,6,Unsuccessful,feast,2,Successful
+
+-help
+kim,brood,6,Unsuccessful,prism,6,Unsuccessful,gooey,3,Successful,hoard,2,Successful
+
+mark,feast,6,Unsuccessful,feast,1,Successful,feast,1,Successful
+
+michael
+michele,vodka,6,Unsuccessful,thrum,6,Unsuccessful
